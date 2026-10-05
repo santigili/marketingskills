@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "FirmaLocal – Rellena y firma PDF sin subirlos",
+  "short_name": "FirmaLocal",
+  "version": "0.1.0",
+  "description": "Rellena formularios y firma PDF en tu ordenador. Tus documentos nunca salen de tu equipo. Sin registro.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Abrir FirmaLocal",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "contextMenus"],
+  "optional_host_permissions": ["<all_urls>"]
+}
