@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FirmaLocal</title>
+  <link rel="icon" href="icons/icon32.png">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/icon32.png" alt="" width="24" height="24">
+      <span>FirmaLocal</span>
+    </div>
+
+    <div class="toolbar" id="toolbar" hidden>
+      <button class="tool" data-tool="text" title="Añadir texto (T)">
+        <svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14"/></svg><span>Texto</span>
+      </button>
+      <button class="tool" data-tool="signature" title="Añadir firma (F)">
+        <svg viewBox="0 0 24 24"><path d="M3 17c3-1 4-9 7-9s-1 9 2 9 3-5 5-5 2 3 4 3"/><path d="M3 21h18"/></svg><span>Firma</span>
+      </button>
+      <button class="tool" data-tool="date" title="Añadir fecha de hoy (D)">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>Fecha</span>
+      </button>
+      <button class="tool" data-tool="check" title="Añadir marca ✓">
+        <svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg><span>Marca</span>
+      </button>
+      <button class="tool" data-tool="cross" title="Añadir cruz ✗">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Cruz</span>
+      </button>
+      <span class="sep"></span>
+      <label class="fontsize" title="Tamaño del texto nuevo">
+        <span>Tamaño</span>
+        <select id="fontSize">
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11" selected>11</option>
+          <option value="12">12</option>
+          <option value="14">14</option>
+          <option value="16">16</option>
+          <option value="20">20</option>
+        </select>
+      </label>
+      <span class="sep"></span>
+      <button class="icon-btn" id="zoomOut" title="Alejar">−</button>
+      <span id="zoomLabel" class="zoom-label">100%</span>
+      <button class="icon-btn" id="zoomIn" title="Acercar">+</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="openBtn">Abrir PDF</button>
+      <button class="btn primary" id="downloadBtn" hidden>Descargar PDF</button>
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf" hidden>
+  </header>
+
+  <div class="subbar" id="subbar" hidden>
+    <span id="fileName" class="file-name"></span>
+    <label class="flatten" title="Convierte los campos rellenados en texto fijo para que no se puedan cambiar">
+      <input type="checkbox" id="flatten" checked>
+      Bloquear el formulario al descargar
+    </label>
+  </div>
+
+  <main id="main">
+    <section class="empty" id="empty">
+      <div class="drop" id="dropZone">
+        <svg viewBox="0 0 48 48" class="drop-icon"><path d="M14 6h14l10 10v26H14z"/><path d="M28 6v10h10"/><path d="M19 32c3-1 4-7 6-7s0 7 2 7 2-3 4-3"/></svg>
+        <h1>Rellena y firma cualquier PDF</h1>
+        <p>Arrastra un PDF aquí o</p>
+        <button class="btn primary big" id="openBtn2">Elegir un PDF</button>
+        <ul class="promises">
+          <li><strong>Privado:</strong> tu PDF nunca sale de tu ordenador.</li>
+          <li><strong>Sin registro:</strong> ábrelo, rellénalo y descárgalo.</li>
+          <li><strong>Sin sorpresas:</strong> descargar es gratis y sin marca de agua.</li>
+        </ul>
+      </div>
+      <div class="remote" id="remoteBox" hidden>
+        <p id="remoteMsg"></p>
+        <button class="btn primary" id="grantBtn" hidden>Permitir acceso a esta web</button>
+      </div>
+    </section>
+    <section class="pages" id="pages" hidden></section>
+  </main>
+
+  <div class="hint" id="hint" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="sigDialog" class="sig-dialog">
+    <form method="dialog" class="sig-form" id="sigForm">
+      <h2>Tu firma</h2>
+      <div class="saved" id="savedSig" hidden>
+        <p>Firma guardada</p>
+        <button type="button" class="saved-btn" id="useSaved" title="Usar esta firma"><img id="savedImg" alt="Firma guardada"></button>
+        <button type="button" class="link" id="deleteSaved">Borrar firma guardada</button>
+      </div>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-tab="draw" role="tab">Dibujar</button>
+        <button type="button" class="tab" data-tab="type" role="tab">Escribir</button>
+        <button type="button" class="tab" data-tab="image" role="tab">Imagen</button>
+      </div>
+      <div class="tab-panel" data-panel="draw">
+        <canvas id="sigCanvas" width="560" height="200"></canvas>
+        <div class="row">
+          <span class="muted">Firma con el ratón o el dedo</span>
+          <button type="button" class="link" id="clearSig">Borrar</button>
+        </div>
+      </div>
+      <div class="tab-panel" data-panel="type" hidden>
+        <input type="text" id="sigText" placeholder="Escribe tu nombre" maxlength="60" autocomplete="name">
+        <div class="type-preview" id="typePreview"></div>
+      </div>
+      <div class="tab-panel" data-panel="image" hidden>
+        <input type="file" id="sigFile" accept="image/png,image/jpeg">
+        <p class="muted">Una foto o escaneo de tu firma. Mejor sobre fondo blanco.</p>
+        <img id="sigImgPreview" class="img-preview" alt="" hidden>
+      </div>
+      <label class="remember"><input type="checkbox" id="rememberSig" checked> Guardar mi firma en este ordenador para la próxima vez</label>
+      <div class="dialog-actions">
+        <button type="button" class="btn" id="cancelSig">Cancelar</button>
+        <button type="button" class="btn primary" id="acceptSig">Añadir firma</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="editor.js"></script>
+</body>
+</html>
